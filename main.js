@@ -88,118 +88,128 @@
             this.homeCoordinates.x = (ourTeamId === '0') ? 0 : 16000;
             this.homeCoordinates.y = (ourTeamId === '0') ? 0 : 9000;
 
+            this.act = function(entities) {
+                
+                this.entities = entities;
+
+                if(this.state == CARRYING) {
+                    this.carryHome();
+                } else {
+                    this.hunt();
+                }
+
+            }
+
+            this.hunt = function() {
+
+                // If there is some ghosts visible...
+                if(this.entities.ghosts.length > 0) {
+
+                    let target = null;
+
+                    // ...and any of them is in range of catch from this buster...
+                    this.entities.ghosts.some((ghost, index) => {
+
+                        let distance = distanceBetween(this.position, ghost.position);
+
+                        if(distance <= 2200) {
+                            target = ghost;
+                            target.distance = distance;
+                            return true;
+                        }
+
+                    });
+
+                    if(target !== null) {
+                        if(target.distance < 900 || target.distance > 1760) {
+                            this.adjust(target);
+                        } else {
+                            this.bust(target);
+                        }
+                    } else {
+                        this.goRand();
+                    }
+
+                } else {
+                    this.goRand();
+                }
+
+            }
+
+            this.carryHome = function() {
+
+                let distanceToHome = distanceBetween(this.position, this.homeCoordinates);
+
+                if(distanceToHome > 1550) {
+                    
+                    let distanceToHomeBorder = distanceToHome - 1500;
+                    let homeDirection = directionFromVector(this.position, this.homeCoordinates);
+                    let newPosition = {
+                        x: Math.round(this.position.x + homeDirection.x * distanceToHomeBorder),
+                        y: Math.round(this.position.y + homeDirection.y * distanceToHomeBorder)
+                    };
+                    print('MOVE ' + newPosition.x + ' ' + newPosition.y + ' Going home!');
+
+                } else {
+                    print('RELEASE');
+                }
+
+            }
+
+            this.adjust = function(target) {
+                let targetCurentPosition = target.position;
+
+                // You have 2 poins A and B,
+                // you need to find poin C, that lie on vector AB,
+                // in direction from A to B, and C is on distance d from B:
+                // 1). Find vector AB - subtract from end point start point
+                // 2). Find vector AB length - squar root of sum of squar of vectors values
+                // 3). Find unit vector AB - divide vector on it's length
+                // 4). Multiply unit vector on d
+                // 5). Set start of final vector in point B
+
+                let direction = directionFromVector(this.position, targetCurentPosition);
+
+                let finalVector = {
+                    x: direction.x * 400,
+                    y: direction.y * 400
+                };
+
+                let targetPossibleNewPosition = {
+                    x: finalVector.x + targetCurentPosition.x,
+                    y: finalVector.y + targetCurentPosition.y
+                };
+
+                let newPossibleDistance = distanceBetween(this.position, targetPossibleNewPosition);
+
+                let adjustment = 0;
+
+                if(newPossibleDistance > 1760) {
+                    adjustment = newPossibleDistance - 1760 + 50;
+                } else if(newPossibleDistance < 900) {
+                    adjustment = 900 - newPossibleDistance + 50;
+                }
+
+                let newPosition = {
+                    x: Math.round(this.position.x + direction.x * adjustment),
+                    y: Math.round(this.position.y + direction.y * adjustment)
+                };
+
+                print('MOVE ' + newPosition.x + ' ' + newPosition.y + ' Pursue ghost!');
+
+            }
+
+            this.bust = function(target) {
+                print('BUST ' + target.id);
+            }
+
+            this.goRand = function() {
+                print('MOVE ' + getRandomInt(0, 16000) + ' ' + getRandomInt(0, 9000) + ' Going random!');
+            }
+
         }
 
         extend(Buster, Entitie);
-
-        Buster.prototype.act = function(entities) {
-            
-            this.entities = entities;
-
-            if(this.state == CARRYING) {
-                this.carryHome();
-            } else {
-                this.hunt();
-            }
-
-        }
-
-        Buster.prototype.hunt = function() {
-
-            // If there is some ghosts visible...
-            if(this.entities.ghosts.length > 0) {
-
-                let target = null;
-
-                // ...and any of them is in range of catch from this buster...
-                this.entities.ghosts.some((index, ghost) => {
-
-                    let distance = distanceBetween(this.position, ghost.position);
-
-                    if(distance <= 2200) {
-                        target = ghost;
-                        target.distance = distance;
-                        return true;
-                    }
-
-                });
-
-                if(target.distance < 900 || target.distance > 1760) {
-                    this.adjust(target);
-                } else {
-                    this.bust(target);
-                }
-            }
-
-        }
-
-        Buster.prototype.carryHome = function() {
-
-            let distanceToHome = distanceBetween(this.position, this.homeCoordinates);
-
-            if(distanceToHome > 1550) {
-                
-                let distanceToHomeBorder = distanceToHome - 1500;
-                let homeDirection = directionFromVector(this.position, this.homeCoordinates);
-                let newPosition = {
-                    x: this.x + homeCoordinates * distanceToHomeBorder,
-                    y: this.y + homeCoordinates * distanceToHomeBorder
-                };
-
-                print('MOVE ' + newPosition.x + ' ' + newPosition.y);
-
-            } else {
-                print('RELEASE');
-            }
-
-        }
-
-        Buster.prototype.adjust = function(target) {
-            let targetCurentPosition = target.position;
-
-            // You have 2 poins A and B,
-            // you need to find poin C, that lie on vector AB,
-            // in direction from A to B, and C is on distance d from B:
-            // 1). Find vector AB - subtract from end point start point
-            // 2). Find vector AB length - squar root of sum of squar of vectors values
-            // 3). Find unit vector AB - divide vector on it's length
-            // 4). Multiply unit vector on d
-            // 5). Set start of final vector in point B
-
-            let direction = directionFromVector(this.position, targetCurentPosition);
-
-            let finalVector = {
-                x: direction.x * 400,
-                y: direction.y * 400
-            };
-
-            let targetPossibleNewPosition = {
-                x: finalVector.x + targetCurentPosition.x,
-                y: finalVector.y + targetCurentPosition.y
-            };
-
-            let newPossibleDistance = distanceBetween(this.position, targetPossibleNewPosition);
-
-            let adjustment = 0;
-
-            if(newPossibleDistance > 1760) {
-                adjustment = newPossibleDistance - 1760 + 50;
-            } else if(newPossibleDistance < 900) {
-                adjustment = 900 - newPossibleDistance + 50;
-            }
-
-            let newPosition = {
-                x: this.position.x + direction * adjustment,
-                y: this.position.y + direction * adjustment
-            };
-
-            print('MOVE ' + newPosition.x + ' ' + newPosition.y);
-
-        }
-
-        Buster.prototype.bust = function(target) {
-            print('BUST ' + target.id);
-        }
 
     /** GHOST **/
         function Ghost(rawEntitie) {
@@ -225,26 +235,28 @@
             this.entities.ghosts = [];
             this.entities.bastards = [];
 
-        }
+            this.addEntitie = function(rawEntitie) {
 
-        EntitiesFactorie.prototype.addEntitie = function(rawEntitie) {
-            switch(rawEntitie[3]) {
-                case -1:
-                    this.entities.ghosts.push(new Ghost(rawEntitie));
-                    break;
+                switch(rawEntitie[3]) {
+                    case '-1':
+                        this.entities.ghosts.push(new Ghost(rawEntitie));
+                        break;
 
-                case this.ourTeamId:
-                    this.entities.busters.push(new Buster(rawEntitie, this.ourTeamId));
-                    break;
+                    case this.ourTeamId:
+                        this.entities.busters.push(new Buster(rawEntitie, this.ourTeamId));
+                        break;
 
-                default:
-                    this.entities.bastards.push(new Bastard(rawEntitie));
-                    break;
+                    default:
+                        this.entities.bastards.push(new Bastard(rawEntitie));
+                        break;
+                }
+
             }
-        }
 
-        EntitiesFactorie.prototype.getEntities = function() {
-            return this.entities;
+            this.getEntities = function() {
+                return this.entities;
+            }
+
         }
 
 /** UTILS **/
