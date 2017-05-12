@@ -88,7 +88,7 @@
             this.homeCoordinates.x = (ourTeamId === '0') ? 0 : 16000;
             this.homeCoordinates.y = (ourTeamId === '0') ? 0 : 9000;
 
-            this.act = function(entities) {
+            this.act = (entities) => {
                 
                 this.entities = entities;
 
@@ -100,7 +100,7 @@
 
             }
 
-            this.hunt = function() {
+            this.hunt = () => {
 
                 // If there is some ghosts visible...
                 if(this.entities.ghosts.length > 0) {
@@ -110,18 +110,23 @@
                     // ...and any of them is in range of catch from this buster...
                     this.entities.ghosts.some((ghost, index) => {
 
-                        let distance = distanceBetween(this.position, ghost.position);
+                    	if(!ghost.spotted) {
+	                        
+	                        let distance = distanceBetween(this.position, ghost.position);
 
-                        if(distance <= 2200) {
-                            target = ghost;
-                            target.distance = distance;
-                            return true;
-                        }
+	                        if(distance <= 2200) {
+	                            target = ghost;
+	                            target.distance = distance;
+	                            this.entities.ghosts[index].spotted = true;
+	                            return true;
+	                        }
+	                        
+	                    }
 
                     });
 
                     if(target !== null) {
-                        if(target.distance < 900 || target.distance > 1760) {
+                        if(atrget.distance < 900 || target.distance > 1760) {
                             this.adjust(target);
                         } else {
                             this.bust(target);
@@ -136,7 +141,7 @@
 
             }
 
-            this.carryHome = function() {
+            this.carryHome = () => {
 
                 let distanceToHome = distanceBetween(this.position, this.homeCoordinates);
 
@@ -156,7 +161,7 @@
 
             }
 
-            this.adjust = function(target) {
+            this.adjust = (target) => {
                 let targetCurentPosition = target.position;
 
                 // You have 2 poins A and B,
@@ -199,11 +204,11 @@
 
             }
 
-            this.bust = function(target) {
+            this.bust = (target) => {
                 print('BUST ' + target.id);
             }
 
-            this.goRand = function() {
+            this.goRand = () => {
                 print('MOVE ' + getRandomInt(0, 16000) + ' ' + getRandomInt(0, 9000) + ' Going random!');
             }
 
@@ -235,7 +240,7 @@
             this.entities.ghosts = [];
             this.entities.bastards = [];
 
-            this.addEntitie = function(rawEntitie) {
+            this.addEntitie = (rawEntitie) => {
 
                 switch(rawEntitie[3]) {
                     case '-1':
@@ -253,7 +258,7 @@
 
             }
 
-            this.getEntities = function() {
+            this.getEntities = () => {
                 return this.entities;
             }
 
