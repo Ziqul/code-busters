@@ -1,3 +1,5 @@
+// TODO: Rename Entitie to Entity
+
 /** CONSTANTS **/
 
     const CARRYING = '1';
@@ -18,6 +20,10 @@
 
         let entities;
         let entitiesFactorie;
+
+        // TODO: Create and initialize map, creat description for it
+        // [description]
+        let map = ;
 
         // Main loop
         while (true) {
@@ -77,6 +83,9 @@
             // For ghosts: number of busters attempting to trap this ghost
             this.value = parseInt(rawEntitie[5]);
 
+            // 
+            this
+
         }
 
     /** BUSTER **/
@@ -92,11 +101,21 @@
                 
                 this.entities = entities;
 
+                this.lookAround();
+
                 if(this.state == CARRYING) {
                     this.carryHome();
                 } else {
                     this.hunt();
                 }
+
+            }
+
+            // TODO: Implement lookAround()
+            this.lookAround = () => {
+
+                // Просмотреть все клетки каты и если все вершины клетки попадают в окружность обзора хотя бы
+                // одного бастера задать им значене текущего кадра, если значение внутри клетки меньше
 
             }
 
@@ -126,7 +145,7 @@
                     });
 
                     if(target !== null) {
-                        if(atrget.distance < 900 || target.distance > 1760) {
+                        if(target.distance < 900 || target.distance > 1760) {
                             this.adjust(target);
                         } else {
                             this.bust(target);
